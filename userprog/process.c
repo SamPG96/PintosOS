@@ -24,18 +24,23 @@ static bool load (const char *cmdline, void (**eip) (void), void **esp);
 
 /* Extracts name of the program from a string, which combines the program name
    and its arguments */
-void get_file_name(const char *file_name, char *program_name){
-  int pCount = 0;
+void retrieve_file_name(const char *file_name, char *program_name){
+  int i = 0;
 
-  for(int i = 0; i < (int)strlen(file_name); i++){
-     if (file_name[i] == ' '){
-       program_name[pCount++] = '\0';
-       break;
-     }
-     else{
-       program_name[pCount++] = file_name[i];
-     }
+  for(; i < ((int)strlen(file_name)); i++){
+    // ensure program name isnt to long
+    if (i > MAX_PROGRAM_NAME_SIZE - 2){
+      break;
+    }
+    // check if reached end of program name
+    else if (file_name[i] == ' ' || file_name[i] == '\0') {
+      break;
+    }
+    else{
+      program_name[i] = file_name[i];
+    }
   }
+  program_name[i] = '\0';
 }
 
 /* Starts a new thread running a user program loaded from
@@ -47,7 +52,7 @@ process_execute (const char *file_name)
 {
   char *fn_copy;
   tid_t tid;
-  char program_name[16];
+  char program_name[MAX_PROGRAM_NAME_SIZE];
 
 
   /* Make a copy of FILE_NAME.
@@ -57,7 +62,7 @@ process_execute (const char *file_name)
     return TID_ERROR;
   strlcpy (fn_copy, file_name, PGSIZE);
 
-  get_file_name(file_name, program_name);
+  retrieve_file_name(file_name, program_name);
 
   /* Create a new thread to execute PROGRAM NAME. */
   tid = thread_create (program_name, PRI_DEFAULT, start_process, fn_copy);
@@ -235,6 +240,7 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
 bool
 load (const char *file_name, void (**eip) (void), void **esp)
 {
+  char program_name[MAX_PROGRAM_NAME_SIZE];
   struct thread *t = thread_current ();
   struct Elf32_Ehdr ehdr;
   struct file *file = NULL;
@@ -248,12 +254,15 @@ load (const char *file_name, void (**eip) (void), void **esp)
     goto done;
   process_activate ();
 
+  retrieve_file_name(file_name, program_name);
+
   /* Open executable file. */
-  file = filesys_open (file_name);
+
+  file = filesys_open (program_name);
 
   if (file == NULL)
     {
-	printf ("load: %s: open failed\n", file_name);
+	printf ("load: %s: open failed\n", program_name);
       goto done;
     }
 
@@ -266,7 +275,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
       || ehdr.e_phentsize != sizeof (struct Elf32_Phdr)
       || ehdr.e_phnum > 1024)
     {
-      printf ("load: %s: error loading executable\n", file_name);
+      printf ("load: %s: error loading executable\n", program_name);
       goto done;
     }
 
