@@ -43,6 +43,13 @@ void retrieve_file_name(const char *file_name, char *program_name){
   program_name[i] = '\0';
 }
 
+
+int handle_cmd_args(const char *args, void **esp){
+
+  return 0;
+}
+
+
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
    before process_execute() returns.  Returns the new process's
@@ -344,6 +351,11 @@ load (const char *file_name, void (**eip) (void), void **esp)
 
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
+
+  /* add cmd args to the stack */
+  // if(!handle_cmd_args(file_name, esp)){
+  //   goto done;
+  // }
 
   success = true;
 
