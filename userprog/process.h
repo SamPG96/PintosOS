@@ -12,4 +12,4 @@ void process_activate (void);
 
 #endif /* userprog/process.h */
 
-#define MAX_PROGRAM_NAME_SIZE 16
+#define MAX_ARG_SIZE 16

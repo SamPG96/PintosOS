@@ -29,7 +29,7 @@ void retrieve_file_name(const char *file_name, char *program_name){
 
   for(; i < ((int)strlen(file_name)); i++){
     // ensure program name isnt to long
-    if (i > MAX_PROGRAM_NAME_SIZE - 2){
+    if (i > MAX_ARG_SIZE - 2){
       break;
     }
     // check if reached end of program name
@@ -43,9 +43,31 @@ void retrieve_file_name(const char *file_name, char *program_name){
   program_name[i] = '\0';
 }
 
-
+/* adds command line arguments to the stack */
 int handle_cmd_args(const char *args, void **esp){
+  char arg[MAX_ARG_SIZE];
+  int argC;
 
+  argC = 0;
+  memset(arg, 0, sizeof arg);
+  for(int i = (int)strlen(args) - 1; i >= 0; i--){
+      // handle more than one whitespace between arguments
+      if (args[i] == ' ' && argC ==0){
+        continue;
+      }
+
+      if (args[i] != ' '){
+        // add character to arg
+        arg[argC++] = args[i];
+      }
+      // check if a whole argument has been found
+      if (args[i] == ' ' || i == 0){
+        //push_arg_to_stack(esp, arg)
+        // reset the arg array for use by the next argument
+        memset(arg, 0, sizeof arg);
+        argC = 0;
+      }
+  }
   return 0;
 }
 
@@ -59,7 +81,7 @@ process_execute (const char *file_name)
 {
   char *fn_copy;
   tid_t tid;
-  char program_name[MAX_PROGRAM_NAME_SIZE];
+  char program_name[MAX_ARG_SIZE];
 
 
   /* Make a copy of FILE_NAME.
@@ -247,7 +269,7 @@ static bool load_segment (struct file *file, off_t ofs, uint8_t *upage,
 bool
 load (const char *file_name, void (**eip) (void), void **esp)
 {
-  char program_name[MAX_PROGRAM_NAME_SIZE];
+  char program_name[MAX_ARG_SIZE];
   struct thread *t = thread_current ();
   struct Elf32_Ehdr ehdr;
   struct file *file = NULL;
@@ -264,7 +286,6 @@ load (const char *file_name, void (**eip) (void), void **esp)
   retrieve_file_name(file_name, program_name);
 
   /* Open executable file. */
-
   file = filesys_open (program_name);
 
   if (file == NULL)
@@ -353,6 +374,7 @@ load (const char *file_name, void (**eip) (void), void **esp)
   *eip = (void (*) (void)) ehdr.e_entry;
 
   /* add cmd args to the stack */
+  handle_cmd_args(file_name, esp);
   // if(!handle_cmd_args(file_name, esp)){
   //   goto done;
   // }
