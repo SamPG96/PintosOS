@@ -49,6 +49,44 @@ int handle_cmd_args(const char *args, void **esp){
   return 0;
 }
 
+char* push_args_to_stack(void **esp, char *arg){
+  char* s = (char) *esp;
+
+  int arg_len = strlen(arg);
+
+  //push arg to stack
+  for(int i = 0; i < arg_len; i++){
+    (*s - 1) = '\0';
+
+    (*s - 1) = arg[i];
+  }
+
+  return &s;
+}
+
+void push_header_to_stack(void **esp, int argv, int len, char[] argp){
+  int mod = len % 4;
+
+  if(mod != 0){
+    //Push padding
+    for(int i = 0; i < mod; i++){
+      (*s - 1) = '\0';
+    }
+  }
+  (*s - 1) = '\0';
+
+  //Push arg pointers
+  int npointers = sizeof(argp);
+  for(int i = 0; i < argp; i++){
+    (*s - 1) = argp[i];
+  }
+
+  //Push head pointer
+  (*s - 1) = &s;
+
+  //Push number of arguments
+  (*s - 1) = argv;
+}
 
 /* Starts a new thread running a user program loaded from
    FILENAME.  The new thread may be scheduled (and may even exit)
