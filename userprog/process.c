@@ -46,9 +46,12 @@ void retrieve_file_name(const char *file_name, char *program_name){
 /* adds command line arguments to the stack */
 int handle_cmd_args(const char *args, void **esp){
   char arg[MAX_ARG_SIZE];
+  char argPointers[MAX_ARG_SIZE];
   int argC;
+  int argP;
 
   argC = 0;
+  argP = 0;
   memset(arg, 0, sizeof arg);
   for(int i = (int)strlen(args) - 1; i >= 0; i--){
       // handle more than one whitespace between arguments
@@ -62,12 +65,16 @@ int handle_cmd_args(const char *args, void **esp){
       }
       // check if a whole argument has been found
       if (args[i] == ' ' || i == 0){
-        //push_arg_to_stack(esp, arg)
+        // push argument to the stack and get a pointer to its location
+        // in the stack.
+        //argPointers[argP++] = push_arg_to_stack(esp, arg)
         // reset the arg array for use by the next argument
         memset(arg, 0, sizeof arg);
         argC = 0;
       }
   }
+  // push pointers to the arguments onto the end of the stack
+  //push_header_to_stack(argPointers);
   return 0;
 }
 
