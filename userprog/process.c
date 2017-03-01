@@ -46,15 +46,19 @@ void retrieve_file_name(const char *file_name, char *program_name){
 /* adds command line arguments to the stack */
 int handle_cmd_args(const char *args, void **esp){
   char arg[MAX_ARG_SIZE];
-  char argPointers[MAX_ARG_SIZE];
+  char *argPointers[MAX_ARG_SIZE];
   int argC;
   int argP;
+  int argV;
+  int totallen;
 
   argC = 0;
   argP = 0;
+  argV = 0;
+  totallen = 0;
   memset(arg, 0, sizeof arg);
   for(int i = (int)strlen(args) - 1; i >= 0; i--){
-      // handle more than one whitespace between arguments
+      //handle more than one whitespace between arguments
       if (args[i] == ' ' && argC ==0){
         continue;
       }
@@ -62,59 +66,79 @@ int handle_cmd_args(const char *args, void **esp){
       if (args[i] != ' '){
         // add character to arg
         arg[argC++] = args[i];
+        totallen++;
       }
+
       // check if a whole argument has been found
-      if (args[i] == ' ' || i == 0){
+      if (args[i] == ' ' || i == 0) {
+        argV++;
+        totallen++;
         // push argument to the stack and get a pointer to its location
         // in the stack.
-        //argPointers[argP++] = push_arg_to_stack(esp, arg)
-        // reset the arg array for use by the next argument
+        //arg[argC] = '\0';
+        argPointers[argP++] = push_args_to_stack(esp, arg, argC);
+        printf("%s\n", argPointers[argP-1]);
+        //reset the arg array for use by the next argument
         memset(arg, 0, sizeof arg);
         argC = 0;
       }
   }
   // push pointers to the arguments onto the end of the stack
-  //push_header_to_stack(argPointers);
-  return 0;
+  push_header_to_stack(esp, argV, totallen, argPointers);
+  return 1;
 }
 
-char* push_args_to_stack(void **esp, char *arg){
-  char* s = (char) *esp;
-
-  int arg_len = strlen(arg);
+char* push_args_to_stack(void **esp, char *arg, int arg_length){
+  char* s = (char*) *esp;
 
   //push arg to stack
-  for(int i = 0; i < arg_len; i++){
-    (*s - 1) = '\0';
-
-    (*s - 1) = arg[i];
+  *--s = '\0';
+  for(int i = 0; i < arg_length; i++){
+    *--s = arg[i];
   }
 
-  return &s;
+  *esp = s;
+  return s;
 }
 
-void push_header_to_stack(void **esp, int argv, int len, char[] argp){
+void push_header_to_stack(void **esp, int number_of_args, int len, char * argp[]){
+  char* s = (char*) *esp;
   int mod = len % 4;
 
   if(mod != 0){
     //Push padding
     for(int i = 0; i < mod; i++){
-      (*s - 1) = '\0';
+      *--s = 0;
     }
   }
-  (*s - 1) = '\0';
+
+  // now push null pointer
+  char ** si = (char **)s;
+  *--si = 0; // NULL
 
   //Push arg pointers
-  int npointers = sizeof(argp);
-  for(int i = 0; i < argp; i++){
-    (*s - 1) = argp[i];
+  for(int i = 0; i < number_of_args; i++){
+    *--si = argp[i];
   }
 
   //Push head pointer
-  (*s - 1) = &s;
+
+  *(si-1) = (char*)si;
+  si--;
 
   //Push number of arguments
-  (*s - 1) = argv;
+  si--;
+  *si = (char*)number_of_args;
+
+  char* s2 = (char*) *esp;
+  for(int i = 0; i < 20; i++){
+    printf("esp: %d = %p\n", i, s2 + i);
+  }
+
+  // push return address
+  *--si = 0;
+
+  *esp = si;
 }
 
 /* Starts a new thread running a user program loaded from
@@ -419,10 +443,9 @@ load (const char *file_name, void (**eip) (void), void **esp)
   *eip = (void (*) (void)) ehdr.e_entry;
 
   /* add cmd args to the stack */
-  handle_cmd_args(file_name, esp);
-  // if(!handle_cmd_args(file_name, esp)){
-  //   goto done;
-  // }
+   if(!handle_cmd_args(file_name, esp)){
+     goto done;
+   }
 
   success = true;
 
