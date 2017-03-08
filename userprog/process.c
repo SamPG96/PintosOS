@@ -47,45 +47,45 @@ void retrieve_file_name(const char *file_name, char *program_name){
 int handle_cmd_args(const char *args, void **esp){
   char arg[MAX_ARG_SIZE];
   char *argPointers[MAX_ARG_SIZE];
-  int argC;
-  int argP;
-  int argV;
-  int totallen;
+  int arg_counter;
+  int argp_index;
+  int number_of_args;
+  int stack_size;
 
-  argC = 0;
-  argP = 0;
-  argV = 0;
-  totallen = 0;
+  arg_counter = 0;
+  argp_index = 0;
+  number_of_args = 0;
+  stack_size = 0;
   memset(arg, 0, sizeof arg);
   for(int i = (int)strlen(args) - 1; i >= 0; i--){
       //handle more than one whitespace between arguments
-      if (args[i] == ' ' && argC ==0){
+      if (args[i] == ' ' && arg_counter ==0){
         continue;
       }
 
       if (args[i] != ' '){
         // add character to arg
-        arg[argC++] = args[i];
-        totallen++;
+        arg[arg_counter++] = args[i];
+        stack_size++;
       }
 
       // check if a whole argument has been found
       if (args[i] == ' ' || i == 0) {
-        argV++;
-        totallen++;
+        number_of_args++;
+        stack_size++;
         // push argument to the stack and get a pointer to its location
         // in the stack.
-        //arg[argC] = '\0';
-        argPointers[argP++] = push_args_to_stack(esp, arg, argC);
-        printf("%s\n", argPointers[argP-1]);
+        //arg[arg_counter] = '\0';
+        argPointers[argp_index++] = push_args_to_stack(esp, arg, arg_counter);
+        printf("%s\n", argPointers[argp_index-1]);
         //reset the arg array for use by the next argument
         memset(arg, 0, sizeof arg);
-        argC = 0;
+        arg_counter = 0;
       }
   }
   // push pointers to the arguments onto the end of the stack
-  push_header_to_stack(esp, argV, totallen, argPointers);
-  return 1;
+  push_header_to_stack(esp, number_of_args, stack_size, argPointers);
+  return 0;
 }
 
 char* push_args_to_stack(void **esp, char *arg, int arg_length){
@@ -101,10 +101,11 @@ char* push_args_to_stack(void **esp, char *arg, int arg_length){
   return s;
 }
 
-void push_header_to_stack(void **esp, int number_of_args, int len, char * argp[]){
+void push_header_to_stack(void **esp, int number_of_args, int len, char * argp_index[]){
   char* s = (char*) *esp;
-  int mod = len % 4;
+  int mod;
 
+  mod = len % 4;
   if(mod != 0){
     //Push padding
     for(int i = 0; i < mod; i++){
@@ -118,7 +119,7 @@ void push_header_to_stack(void **esp, int number_of_args, int len, char * argp[]
 
   //Push arg pointers
   for(int i = 0; i < number_of_args; i++){
-    *--si = argp[i];
+    *--si = argp_index[i];
   }
 
   //Push head pointer
@@ -442,10 +443,12 @@ load (const char *file_name, void (**eip) (void), void **esp)
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
 
+  handle_cmd_args(file_name, esp);
+
   /* add cmd args to the stack */
-   if(!handle_cmd_args(file_name, esp)){
-     goto done;
-   }
+  //  if(!handle_cmd_args(file_name, esp)){
+  //    goto done;
+  //  }
 
   success = true;
 
