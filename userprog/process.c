@@ -47,45 +47,50 @@ void retrieve_file_name(const char *file_name, char *program_name){
 int handle_cmd_args(const char *args, void **esp){
   char arg[MAX_ARG_SIZE];
   char *arg_pointers[MAX_ARG_SIZE];
-  int arg_counter;
+  int arg_length;
   int argp_index;
   int number_of_args;
   int stack_size;
 
-  arg_counter = 0;
+  arg_length = 0;
   argp_index = 0;
   number_of_args = 0;
   stack_size = 0;
   memset(arg, 0, sizeof arg);
-  for(int i = 0; i < (int)strlen(args) - 1; i++){
+  for(int i = (int)strlen(args) - 1; i >= 0; i--){
+    printf("CHAR IS: %c\n", args[i]);
       //handle more than one whitespace between arguments
-      if (args[i] == ' ' && arg_counter ==0){
+      if (args[i] == ' ' && arg_length ==0){
+        printf("Has more than one whitespace\n");
         continue;
       }
 
       if (args[i] != ' '){
         // add character to arg
-        arg[arg_counter++] = args[i];
+        printf("add char\n" );
+        arg[arg_length++] = args[i];
         stack_size++;
       }
 
       // check if a whole argument has been found
       if (args[i] == ' ' || i == 0) {
+        printf("End of arg\n" );
         number_of_args++;
         stack_size++;
         // push argument to the stack and get a pointer to its location
         // in the stack.
-        //arg[arg_counter] = '\0';
-        arg_pointers[argp_index++] = push_args_to_stack(esp, arg, arg_counter);
+        printf("ARG: %s\n", arg);
+        arg_pointers[argp_index++] = push_args_to_stack(esp, arg, arg_length);
       //  printf("%s\n", arg_pointers[argp_index-1]);
         //reset the arg array for use by the next argument
         memset(arg, 0, sizeof arg);
-        arg_counter = 0;
+        arg_length = 0;
       }
   }
-  printf("STACK SIZE %i\n", stack_size);
   // push pointers to the arguments onto the end of the stack
   push_header_to_stack(esp, number_of_args, stack_size, arg_pointers);
+  printf("STACK SIZE %i\n", stack_size);
+
   return 0;
 }
 
@@ -93,10 +98,11 @@ char* push_args_to_stack(void **esp, char *arg, int arg_length){
   char* s = (char*) *esp;
 
   //push arg to stack
-  *--s = '\0';
-  for(int i = arg_length - 1; i > -1; i--){
+  //*--s = '\0';
+  for(int i = 0; i < arg_length; i++){
     *--s = arg[i];
   }
+  *--s = '\0';
 
   *esp = s;
   return s;
@@ -131,15 +137,14 @@ void push_header_to_stack(void **esp, int number_of_args, int len, char * argp_i
   si--;
   *si = (char*)number_of_args;
 
-  char* s2 = (char*) *esp;
-  for(int i = 0; i < 20; i++){
-    printf("esp: %d = %c\t \n", i, *(s2 + i));
-  }
-
   // push return address
   *--si = 0;
 
+  char* top_of_esp = (char*) *esp+len;
   *esp = si;
+  for(int i = 0; i < 20; i++){
+    printf("esp: data -> %c\t mem -> %p \n", *(top_of_esp- i),top_of_esp - i);
+  }
 }
 
 /* Starts a new thread running a user program loaded from
