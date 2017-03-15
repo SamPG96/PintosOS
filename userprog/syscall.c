@@ -44,7 +44,7 @@ syscall_handler (struct intr_frame *f)
          (unsigned int)load_stack(f, ARG_3));
       // set return value
       f->eax = result;
-      break;
+      return;
     }
     // case(SYS_SEEK): /* Change position in a file. */
     // case(SYS_TELL): /* Report current position in a file. */
@@ -77,7 +77,7 @@ syscall_handler (struct intr_frame *f)
 // int handle_read (int fd, void *buffer, unsigned size){}
 //
 int handle_write (int fd, const void *buffer, unsigned int length){
-  printf("BUFFER: %s, LENGTH: %u\n", buffer, length);
+  //printf("BUFFER: %s, LENGTH: %u\n", buffer, length);
   if (fd == STDOUT_FILENO) {
     putbuf((const char *)buffer, (size_t)length);
   }
