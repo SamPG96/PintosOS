@@ -12,55 +12,83 @@ syscall_init (void)
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
 }
 
-static uint32_t load_stack(struct intr_frame *f, int offset){
-  // need to add check for valid address
-  // i.e. user can do bad things
+static uint32_t load_stack(struct intr_frame *f, int offset)
+{
+  //TODO: check for valid address
+
   return *((uint32_t*)(f->esp + offset));
 }
 
-static int handle_write(int fd, const void * buffer, unsigned int length) {
+void
+syscall_handler (struct intr_frame *f)
+{
+  int sys_call_code;
+
+  sys_call_code = (int)load_stack(f, ARG_CODE);
+
+  switch(sys_call_code){
+    // case(SYS_HALT): /* Halt the operating system. */
+    // case(SYS_EXIT): /* Terminate this process. */
+    // case(SYS_EXEC): /* Start another process. */
+    // case(SYS_WAIT): /* Wait for a child process to die. */
+    // case(SYS_CREATE): /* Create a file. */
+    // case(SYS_REMOVE): /* Delete a file. */
+    // case(SYS_OPEN): /* Open a file. */
+    // case(SYS_FILESIZE): /* Obtain a file's size. */
+    // case(SYS_READ): /* Read from a file. */
+    case SYS_WRITE:
+    { /* Write to a file. */
+      int result = handle_write(
+         (int)load_stack(f,ARG_1),
+         (void *)load_stack(f, ARG_2),
+         (unsigned int)load_stack(f, ARG_3));
+      // set return value
+      f->eax = result;
+      return;
+    }
+    // case(SYS_SEEK): /* Change position in a file. */
+    // case(SYS_TELL): /* Report current position in a file. */
+    // case(SYS_CLOSE): /* Close a file. */
+    default:
+    {
+      printf("SYS_CALL (%d) is not implemented\n", sys_call_code);
+      thread_exit ();
+    }
+  }
+  thread_exit ();
+}
+
+// void handle_halt (void){}
+//
+// void handle_exit (int status){}
+//
+// pid_t handle_exec (const char *cmd_line){}
+//
+// int handle_wait (pid_t pid){}
+//
+// bool handle_create (const char *file, unsigned initial_size){}
+//
+// bool handle_remove (const char *file){}
+//
+// int handle_open (const char *file){}
+//
+// int handle_filesize (int fd){}
+//
+// int handle_read (int fd, void *buffer, unsigned size){}
+//
+int handle_write (int fd, const void *buffer, unsigned int length){
+  //printf("BUFFER: %s, LENGTH: %u\n", buffer, length);
   if (fd == STDOUT_FILENO) {
-   putbuf((const char *)buffer, (size_t)length);
+    putbuf((const char *)buffer, (size_t)length);
   }
   else {
     printf("handle_write does not support fd output\n");
   }
   return length;
 }
-
-#define ARG_CODE 0
-#define ARG_1 4
-#define ARG_2 8
-#define ARG_3 12
-
-void syscall_handler (struct intr_frame *f) {
-
-  printf("in here\n");
-
- int code = (int)load_stack(f, ARG_CODE);
-
-  switch (code) {
-  case SYS_WRITE: {
-      int result = handle_write(
-        (int)load_stack(f,ARG_1),
-        (void *)load_stack(f, ARG_2),
-        (unsigned int)load_stack(f, ARG_3));
-
-        // set return value f->eax = result; break;
-      }
-      break;
-  default:
-      printf("SYS_CALL (%d) not implemented\n", code);
-      thread_exit ();
-  }
-}
-// static void syscall_handler (struct intr_frame *);
 //
+// void handle_seek (int fd, unsigned position){}
 //
+// unsigned handle_tell (int fd){}
 //
-// static void
-// syscall_handler (struct intr_frame *f UNUSED)
-// {
-//   printf ("system call!\n");
-//   thread_exit ();
-// }
+// void handle_close (int fd);{}

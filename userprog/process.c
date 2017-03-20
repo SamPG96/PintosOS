@@ -43,53 +43,52 @@ void retrieve_file_name(const char *file_name, char *program_name){
   program_name[i] = '\0';
 }
 
-/* adds command line arguments to the stack */
+/* Adds command line arguments to the stack */
 int handle_cmd_args(const char *args, void **esp){
   char arg[MAX_ARG_SIZE];
-  char *argPointers[MAX_ARG_SIZE];
-  int arg_counter;
+  char *arg_pointers[MAX_ARG_SIZE];
+  int arg_length;
   int argp_index;
   int number_of_args;
-  int stack_size;
 
-  arg_counter = 0;
+  arg_length = 0;
   argp_index = 0;
   number_of_args = 0;
-  stack_size = 0;
+
   memset(arg, 0, sizeof arg);
   for(int i = (int)strlen(args) - 1; i >= 0; i--){
       //handle more than one whitespace between arguments
-      if (args[i] == ' ' && arg_counter ==0){
+      if (args[i] == ' ' && arg_length ==0){
         continue;
       }
 
       if (args[i] != ' '){
         // add character to arg
-        arg[arg_counter++] = args[i];
-        stack_size++;
+        arg[arg_length++] = args[i];
       }
 
       // check if a whole argument has been found
       if (args[i] == ' ' || i == 0) {
         number_of_args++;
-        stack_size++;
+
         // push argument to the stack and get a pointer to its location
         // in the stack.
-        //arg[arg_counter] = '\0';
-        argPointers[argp_index++] = push_args_to_stack(esp, arg, arg_counter);
-        printf("%s\n", argPointers[argp_index-1]);
+        arg_pointers[argp_index++] = push_args_to_stack(esp, arg, arg_length);
         //reset the arg array for use by the next argument
         memset(arg, 0, sizeof arg);
-        arg_counter = 0;
+        arg_length = 0;
       }
   }
-  // push pointers to the arguments onto the end of the stack
-  push_header_to_stack(esp, number_of_args, stack_size, argPointers);
-  return 0;
+
+  push_header_to_stack(esp, number_of_args, arg_pointers);
+  return 1;
 }
 
+/* Add a backwards argument to the start and return a pointer to
+   where it is in the stack.
+*/
 char* push_args_to_stack(void **esp, char *arg, int arg_length){
-  char* s = (char*) *esp;
+  char* s = *((char**)esp);
 
   //push arg to stack
   *--s = '\0';
@@ -97,49 +96,46 @@ char* push_args_to_stack(void **esp, char *arg, int arg_length){
     *--s = arg[i];
   }
 
-  *esp = s;
+  // set esp
+  *esp = (void*)s;
   return s;
 }
 
-void push_header_to_stack(void **esp, int number_of_args, int len, char * argp_index[]){
-  char* s = (char*) *esp;
-  int mod;
+/* Add padding, pointers of the arguments, number of arguments and the relevant
+   null pointers.
+*/
+void push_header_to_stack(void **esp, int argc, char *argp_index[]){
+  char* s = *((char**)esp);
 
-  mod = len % 4;
-  if(mod != 0){
-    //Push padding
-    for(int i = 0; i < mod; i++){
-      *--s = 0;
-    }
+  // push padding
+  for(size_t rem = ((size_t)s) % 4; rem != 0; rem--) {
+    *--s = 0;
   }
 
   // now push null pointer
-  char ** si = (char **)s;
-  *--si = 0; // NULL
+  char **sp = (char**)s;
+  *--sp = 0;
 
   //Push arg pointers
-  for(int i = 0; i < number_of_args; i++){
-    *--si = argp_index[i];
+  for(int i = 0; i < argc; i++){
+    *--sp = argp_index[i];
   }
 
   //Push head pointer
+  char ** spp = (char**)sp;
+  *(spp-1) = (char*)spp;
+  spp--;
 
-  *(si-1) = (char*)si;
-  si--;
-
-  //Push number of arguments
-  si--;
-  *si = (char*)number_of_args;
-
-  char* s2 = (char*) *esp;
-  for(int i = 0; i < 20; i++){
-    printf("esp: %d = %p\n", i, s2 + i);
-  }
+  //Push number of argument
+  int * spi = (int*)spp;
+  *--spi = argc;
 
   // push return address
-  *--si = 0;
+  *--spi = 0;
 
-  *esp = si;
+  // set esp
+  *esp = (void*)spi;
+
 }
 
 /* Starts a new thread running a user program loaded from
@@ -199,6 +195,8 @@ start_process (void *file_name_)
      arguments on the stack in the form of a `struct intr_frame',
      we just point the stack pointer (%esp) to our stack frame
      and jump to it. */
+
+  //TODO: FAILS ON THE NEXT LINE WITH PAGE FAULT
   asm volatile ("movl %0, %%esp; jmp intr_exit" : : "g" (&if_) : "memory");
   NOT_REACHED ();
 }
@@ -443,12 +441,12 @@ load (const char *file_name, void (**eip) (void), void **esp)
   /* Start address. */
   *eip = (void (*) (void)) ehdr.e_entry;
 
-  handle_cmd_args(file_name, esp);
+  //handle_cmd_args(file_name, esp);
 
   /* add cmd args to the stack */
-  //  if(!handle_cmd_args(file_name, esp)){
-  //    goto done;
-  //  }
+     if(!handle_cmd_args(file_name, esp)){
+       goto done;
+     }
 
   success = true;
 
@@ -579,7 +577,7 @@ setup_stack (void **esp)
     {
       success = install_page (((uint8_t *) PHYS_BASE) - PGSIZE, kpage, true);
       if (success) {
-        *esp = PHYS_BASE - 12; //TODO remove when implemented in assaigment
+        *esp = PHYS_BASE;
       } else
         palloc_free_page (kpage);
     }
