@@ -43,7 +43,7 @@ void retrieve_file_name(const char *file_name, char *program_name){
   program_name[i] = '\0';
 }
 
-/* adds command line arguments to the stack */
+/* Adds command line arguments to the stack */
 int handle_cmd_args(const char *args, void **esp){
   char arg[MAX_ARG_SIZE];
   char *arg_pointers[MAX_ARG_SIZE];
@@ -84,6 +84,9 @@ int handle_cmd_args(const char *args, void **esp){
   return 1;
 }
 
+/* Add a backwards argument to the start and return a pointer to
+   where it is in the stack.
+*/
 char* push_args_to_stack(void **esp, char *arg, int arg_length){
   char* s = *((char**)esp);
 
@@ -98,6 +101,9 @@ char* push_args_to_stack(void **esp, char *arg, int arg_length){
   return s;
 }
 
+/* Add padding, pointers of the arguments, number of arguments and the relevant
+   null pointers.
+*/
 void push_header_to_stack(void **esp, int argc, char *argp_index[]){
   char* s = *((char**)esp);
 
