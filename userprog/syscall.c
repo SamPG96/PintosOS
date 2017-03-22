@@ -1,8 +1,4 @@
 #include "userprog/syscall.h"
-#include <stdio.h>
-#include <syscall-nr.h>
-#include "threads/interrupt.h"
-#include "threads/thread.h"
 
 void syscall_handler (struct intr_frame *f);
 
@@ -10,6 +6,7 @@ void
 syscall_init (void)
 {
   intr_register_int (0x30, 3, INTR_ON, syscall_handler, "syscall");
+  list_init(&all_open_files);
 }
 
 static uint32_t load_stack(struct intr_frame *f, int offset)
@@ -23,6 +20,7 @@ void
 syscall_handler (struct intr_frame *f)
 {
   int sys_call_code;
+  int result;
 
   sys_call_code = (int)load_stack(f, ARG_CODE);
 
@@ -33,22 +31,26 @@ syscall_handler (struct intr_frame *f)
     // case(SYS_WAIT): /* Wait for a child process to die. */
     // case(SYS_CREATE): /* Create a file. */
     // case(SYS_REMOVE): /* Delete a file. */
+
     case SYS_OPEN: /* Open a file. */
     {
-      int fd;
-
-      fd = handle_open(
+      result = handle_open(
         (char*)load_stack(f, ARG_1));
+
+      // set return value
+      f->eax = result;
+      return;
     }
 
     // case(SYS_FILESIZE): /* Obtain a file's size. */
     // case(SYS_READ): /* Read from a file. */
     case SYS_WRITE: /* Write to a file. */
     {
-      int result = handle_write(
+      result = handle_write(
          (int)load_stack(f,ARG_1),
          (void *)load_stack(f, ARG_2),
          (unsigned int)load_stack(f, ARG_3));
+
       // set return value
       f->eax = result;
       return;
@@ -78,14 +80,29 @@ syscall_handler (struct intr_frame *f)
 // bool handle_remove (const char *file){}
 //
 
-int handle_open(const char *file){
+int handle_open(const char *file_name){
+  struct file_descriptor *fd;
 
+  fd = calloc(1, sizeof *fd);
+  fd->f = filesys_open(file_name);
+
+  // return error code if there was a problem opening the file
+  if (fd->f == NULL){
+    return -1;
+  }
+
+  fd->fd_num = generate_fd_num();
+
+  list_push_back(&all_open_files, &fd->elem);
+
+  return fd->fd_num;
 }
 
 // int handle_filesize (int fd){}
-//
+
 // int handle_read (int fd, void *buffer, unsigned size){}
-//
+
+
 int handle_write (int fd, const void *buffer, unsigned int length){
   //printf("BUFFER: %s, LENGTH: %u\n", buffer, length);
   if (fd == STDOUT_FILENO) {
@@ -96,9 +113,14 @@ int handle_write (int fd, const void *buffer, unsigned int length){
   }
   return length;
 }
-//
+
+
 // void handle_seek (int fd, unsigned position){}
-//
+
 // unsigned handle_tell (int fd){}
-//
+
 // void handle_close (int fd);{}
+
+int generate_fd_num(void){
+  return ++current_fd;
+}
