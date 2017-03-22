@@ -33,11 +33,18 @@ syscall_handler (struct intr_frame *f)
     // case(SYS_WAIT): /* Wait for a child process to die. */
     // case(SYS_CREATE): /* Create a file. */
     // case(SYS_REMOVE): /* Delete a file. */
-    // case(SYS_OPEN): /* Open a file. */
+    case SYS_OPEN: /* Open a file. */
+    {
+      int fd;
+
+      fd = handle_open(
+        (char*)load_stack(f, ARG_1));
+    }
+
     // case(SYS_FILESIZE): /* Obtain a file's size. */
     // case(SYS_READ): /* Read from a file. */
-    case SYS_WRITE:
-    { /* Write to a file. */
+    case SYS_WRITE: /* Write to a file. */
+    {
       int result = handle_write(
          (int)load_stack(f,ARG_1),
          (void *)load_stack(f, ARG_2),
@@ -70,8 +77,11 @@ syscall_handler (struct intr_frame *f)
 //
 // bool handle_remove (const char *file){}
 //
-// int handle_open (const char *file){}
-//
+
+int handle_open(const char *file){
+
+}
+
 // int handle_filesize (int fd){}
 //
 // int handle_read (int fd, void *buffer, unsigned size){}
