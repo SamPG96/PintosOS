@@ -1,0 +1,11 @@
+#!/bin/bash
+
+pintos-mkdisk filesys.dsk --filesys-size=2
+pintos -f -q
+pintos -p ../../examples/echo -a echo -- -q
+pintos -p ../../examples/cat -a cat -- -q
+pintos -p ../../examples/rm -a rm -- -q
+pintos -p ../../examples/ls -a ls -- -q
+pintos -p ../../examples/cp -a cp -- -q
+pintos -p ../../CNOS_dev/simple.txt -a simple.txt -- -q
+
