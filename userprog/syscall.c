@@ -106,8 +106,29 @@ syscall_handler (struct intr_frame *f)
       f->eax = result;
       return;
     }
-    // case(SYS_SEEK): /* Change position in a file. */
-    // case(SYS_TELL): /* Report current position in a file. */
+
+    //TODO: test this
+    case SYS_SEEK: /* Change position in a file. */
+    {
+      handle_seek(
+        (int)load_stack(f,ARG_1),
+        (unsigned)load_stack(f, ARG_3));
+
+      return;
+    }
+
+    // TODO: test this
+    case SYS_TELL: /* Report current position in a file. */
+    {
+      unsigned next_byte;
+
+      next_byte = handle_tell(
+         (int)load_stack(f,ARG_1));
+
+      // set return value
+      f->eax = next_byte;
+      return;
+    }
 
     case SYS_CLOSE: /* Close a file. */
       handle_close(
@@ -165,26 +186,44 @@ int handle_filesize (int fd_num){
 
   fd = get_opened_file(fd_num);
 
-  if (fd != NULL){
-    return file_length(fd->f);
-  }
-  else{
-    return -1;
-  }
-}
-
-int handle_read (int fd_num, void *buffer, unsigned size){
-  struct file_descriptor *fd;
-
-  fd = get_opened_file(fd_num);
   if (fd == NULL){
     return -1;
   }
 
-  return file_read(fd->f , buffer, size);
+  return file_length(fd->f);
 }
 
+int handle_read (int fd_num, void *buffer, unsigned size){
+  struct file_descriptor *fd;
+  uint8_t key_input;
+  unsigned byte_pos;
 
+  if (fd_num == STDOUT_FILENO){
+    return -1;
+  }
+  else if(fd_num == STDIN_FILENO){
+    // get keyboard input
+    // TODO: fixme(look at putbuf in write), also check return
+    // for (byte_pos = 0; byte_pos < size; byte_pos++){
+    //   key_input = input_getc();
+    //   buffer = key_input;
+    //   buffer++;
+    // }
+    //
+    // // add NULL
+    // buffer = 0;
+    // return byte_pos;
+  }
+  else{
+    fd = get_opened_file(fd_num);
+    if (fd == NULL){
+      return -1;
+    }
+    return file_read(fd->f , buffer, size);
+  }
+}
+
+//TODO: finish
 int handle_write (int fd, const void *buffer, unsigned int length){
   //printf("BUFFER: %s, LENGTH: %u\n", buffer, length);
   if (fd == STDOUT_FILENO) {
@@ -197,9 +236,29 @@ int handle_write (int fd, const void *buffer, unsigned int length){
 }
 
 
-// void handle_seek (int fd, unsigned position){}
+void handle_seek (int fd_num, unsigned position){
+  struct file_descriptor *fd;
 
-// unsigned handle_tell (int fd){}
+  fd = get_opened_file(fd_num);
+
+  if (fd == NULL){
+    return;
+  }
+
+  file_seek (fd->f, position);
+}
+
+unsigned handle_tell (int fd_num){
+  struct file_descriptor *fd;
+
+  fd = get_opened_file(fd_num);
+
+  if (fd == NULL){
+    return 0;
+  }
+
+  return file_tell (fd->f);
+}
 
 void handle_close (int fd_num){
   struct list_elem *element;
