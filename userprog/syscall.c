@@ -78,7 +78,6 @@ syscall_handler (struct intr_frame *f)
       return;
     }
 
-    // TODO: handle if file num == 1
     case SYS_READ: /* Read from a file. */
     {
       int bytes_read;
@@ -197,22 +196,20 @@ int handle_read (int fd_num, void *buffer, unsigned size){
   struct file_descriptor *fd;
   uint8_t key_input;
   unsigned byte_pos;
+  uint8_t* b = (uint8_t*)buffer;
 
   if (fd_num == STDOUT_FILENO){
     return -1;
   }
   else if(fd_num == STDIN_FILENO){
-    // get keyboard input
-    // TODO: fixme(look at putbuf in write), also check return
-    // for (byte_pos = 0; byte_pos < size; byte_pos++){
-    //   key_input = input_getc();
-    //   buffer = key_input;
-    //   buffer++;
-    // }
-    //
-    // // add NULL
-    // buffer = 0;
-    // return byte_pos;
+    //get keyboard input
+    for (byte_pos = 0; byte_pos < size; byte_pos++){
+      key_input = input_getc();
+      *b = key_input;
+      b++;
+    }
+
+    return byte_pos;
   }
   else{
     fd = get_opened_file(fd_num);
@@ -223,16 +220,29 @@ int handle_read (int fd_num, void *buffer, unsigned size){
   }
 }
 
-//TODO: finish
-int handle_write (int fd, const void *buffer, unsigned int length){
-  //printf("BUFFER: %s, LENGTH: %u\n", buffer, length);
-  if (fd == STDOUT_FILENO) {
+int handle_write (int fd_num, const void *buffer, unsigned int length){
+  struct file_descriptor *fd;
+  int bw; // bytes written
+
+  //
+  if (fd_num == STDOUT_FILENO) {
     putbuf((const char *)buffer, (size_t)length);
+    bw = length;
+  }
+  else if (fd_num == STDIN_FILENO){
+    return -1;
   }
   else {
-    printf("handle_write does not support fd output\n");
+    fd = get_opened_file(fd_num);
+
+    if (fd == NULL){
+      return - 1;
+    }
+
+    bw = file_write(fd->f, buffer, length);
   }
-  return length;
+
+  return bw;
 }
 
 
