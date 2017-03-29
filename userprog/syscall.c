@@ -24,10 +24,21 @@ syscall_handler (struct intr_frame *f)
   sys_call_code = (int)load_stack(f, ARG_CODE);
 
   switch(sys_call_code){
-    // case(SYS_HALT): /* Halt the operating system. */
-    // case(SYS_EXIT): /* Terminate this process. */
-    // case(SYS_EXEC): /* Start another process. */
-    // case(SYS_WAIT): /* Wait for a child process to die. */
+
+    // case SYS_HALT: /* Halt the operating system. */
+
+    case SYS_EXIT: /* Terminate this process. */
+
+      handle_exit((int)load_stack(f, ARG_1));
+
+      return;
+
+    // case SYS_EXEC: /* Start another process. */
+    //
+    //   handle_exec((char*)load_stack(f, ARG_1));
+    //   return;
+
+    // case SYS_WAIT: /* Wait for a child process to die. */
 
     // TODO: handle if already exists
     case SYS_CREATE: /* Create a file. */
@@ -125,17 +136,33 @@ syscall_handler (struct intr_frame *f)
 }
 
 // void handle_halt (void){}
+
+void handle_exit (int status){
+  struct thread* cur;
+  cur = thread_current();
+
+  struct list_elem element;
+  element = cur->elem;
+  list_remove(&element);
+
+  printf ("%s: exit(%i)\n", cur->name,status);
+  thread_exit();
+}
+
+// pid_t handle_exec (const char *cmd_line){
+//   struct list_elem* last_elem;
+//   struct list_elem* new_elem;
 //
-// void handle_exit (int status){}
+//   last_elem = list_end();
 //
-// pid_t handle_exec (const char *cmd_line){}
-//
+//   list_insert();
+// }
+
 // int handle_wait (pid_t pid){}
-//
+
 bool handle_create (const char *file_name, unsigned initial_size){
   return filesys_create(file_name, initial_size);
 }
-
 
 /* Use filesys to delete the file */
 bool handle_remove (const char *file_name){
@@ -184,7 +211,6 @@ int handle_read (int fd_num, void *buffer, unsigned size){
   return file_read(fd->f , buffer, size);
 }
 
-
 int handle_write (int fd, const void *buffer, unsigned int length){
   //printf("BUFFER: %s, LENGTH: %u\n", buffer, length);
   if (fd == STDOUT_FILENO) {
@@ -195,7 +221,6 @@ int handle_write (int fd, const void *buffer, unsigned int length){
   }
   return length;
 }
-
 
 // void handle_seek (int fd, unsigned position){}
 
