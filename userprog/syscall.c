@@ -106,17 +106,15 @@ syscall_handler (struct intr_frame *f)
       return;
     }
 
-    //TODO: test this
     case SYS_SEEK: /* Change position in a file. */
     {
       handle_seek(
         (int)load_stack(f,ARG_1),
-        (unsigned)load_stack(f, ARG_3));
+        (unsigned)load_stack(f, ARG_2));
 
       return;
     }
 
-    // TODO: test this
     case SYS_TELL: /* Report current position in a file. */
     {
       unsigned next_byte;
@@ -141,7 +139,6 @@ syscall_handler (struct intr_frame *f)
       thread_exit ();
     }
   }
-  thread_exit ();
 }
 
 // void handle_halt (void){}
