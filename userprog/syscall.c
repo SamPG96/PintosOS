@@ -39,7 +39,6 @@ syscall_handler (struct intr_frame *f)
 
     // case SYS_WAIT: /* Wait for a child process to die. */
 
-    // TODO: handle if already exists
     case SYS_CREATE: /* Create a file. */
     {
       bool success;
