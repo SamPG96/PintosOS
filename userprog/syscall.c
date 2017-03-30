@@ -9,6 +9,7 @@ syscall_init (void)
   list_init(&all_open_files);
 }
 
+/* Gets the required argument for a process from the stack*/
 static uint32_t load_stack(struct intr_frame *f, int offset)
 {
   //TODO: check for valid address
@@ -16,6 +17,7 @@ static uint32_t load_stack(struct intr_frame *f, int offset)
   return *((uint32_t*)(f->esp + offset));
 }
 
+/* Handle the system call code */
 void
 syscall_handler (struct intr_frame *f)
 {
@@ -175,11 +177,14 @@ void handle_exit (int status){
 
 // int handle_wait (pid_t pid){}
 
+/* Creates a new file of a specified size in bytes.
+   Returns true if the file was created successful, false otherwise.*/
 bool handle_create (const char *file_name, unsigned initial_size){
   return filesys_create(file_name, initial_size);
 }
 
-/* Use filesys to delete the file */
+/* Delete a file from the filesystem. A file can be removed whether or
+   not the file is open. */
 bool handle_remove (const char *file_name){
   return filesys_remove(file_name);
 }
