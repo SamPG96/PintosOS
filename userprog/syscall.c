@@ -28,7 +28,6 @@ syscall_handler (struct intr_frame *f)
     // case SYS_HALT: /* Halt the operating system. */
 
     case SYS_EXIT: /* Terminate this process. */
-
       handle_exit((int)load_stack(f, ARG_1));
 
       return;
@@ -89,7 +88,6 @@ syscall_handler (struct intr_frame *f)
       return;
     }
 
-    // TODO: handle if file num == 1
     case SYS_READ: /* Read from a file. */
     {
       int bytes_read;
@@ -117,8 +115,27 @@ syscall_handler (struct intr_frame *f)
       f->eax = result;
       return;
     }
-    // case(SYS_SEEK): /* Change position in a file. */
-    // case(SYS_TELL): /* Report current position in a file. */
+
+    case SYS_SEEK: /* Change position in a file. */
+    {
+      handle_seek(
+        (int)load_stack(f,ARG_1),
+        (unsigned)load_stack(f, ARG_2));
+
+      return;
+    }
+
+    case SYS_TELL: /* Report current position in a file. */
+    {
+      unsigned next_byte;
+
+      next_byte = handle_tell(
+         (int)load_stack(f,ARG_1));
+
+      // set return value
+      f->eax = next_byte;
+      return;
+    }
 
     case SYS_CLOSE: /* Close a file. */
       handle_close(
@@ -132,7 +149,6 @@ syscall_handler (struct intr_frame *f)
       thread_exit ();
     }
   }
-  thread_exit ();
 }
 
 // void handle_halt (void){}
@@ -192,39 +208,89 @@ int handle_filesize (int fd_num){
 
   fd = get_opened_file(fd_num);
 
-  if (fd != NULL){
-    return file_length(fd->f);
-  }
-  else{
-    return -1;
-  }
-}
-
-int handle_read (int fd_num, void *buffer, unsigned size){
-  struct file_descriptor *fd;
-
-  fd = get_opened_file(fd_num);
   if (fd == NULL){
     return -1;
   }
 
-  return file_read(fd->f , buffer, size);
+  return file_length(fd->f);
 }
 
-int handle_write (int fd, const void *buffer, unsigned int length){
-  //printf("BUFFER: %s, LENGTH: %u\n", buffer, length);
-  if (fd == STDOUT_FILENO) {
+int handle_read (int fd_num, void *buffer, unsigned size){
+  struct file_descriptor *fd;
+  uint8_t key_input;
+  unsigned byte_pos;
+  uint8_t* b = (uint8_t*)buffer;
+
+  if (fd_num == STDOUT_FILENO){
+    return -1;
+  }
+  else if(fd_num == STDIN_FILENO){
+    //get keyboard input
+    for (byte_pos = 0; byte_pos < size; byte_pos++){
+      key_input = input_getc();
+      *b = key_input;
+      b++;
+    }
+
+    return byte_pos;
+  }
+  else{
+    fd = get_opened_file(fd_num);
+    if (fd == NULL){
+      return -1;
+    }
+    return file_read(fd->f , buffer, size);
+  }
+}
+
+int handle_write (int fd_num, const void *buffer, unsigned int length){
+  struct file_descriptor *fd;
+  int bw; // bytes written
+
+  //
+  if (fd_num == STDOUT_FILENO) {
     putbuf((const char *)buffer, (size_t)length);
+    bw = length;
+  }
+  else if (fd_num == STDIN_FILENO){
+    return -1;
   }
   else {
-    printf("handle_write does not support fd output\n");
+    fd = get_opened_file(fd_num);
+
+    if (fd == NULL){
+      return - 1;
+    }
+
+    bw = file_write(fd->f, buffer, length);
   }
-  return length;
+
+  return bw;
 }
 
-// void handle_seek (int fd, unsigned position){}
+void handle_seek (int fd_num, unsigned position){
+  struct file_descriptor *fd;
 
-// unsigned handle_tell (int fd){}
+  fd = get_opened_file(fd_num);
+
+  if (fd == NULL){
+    return;
+  }
+
+  file_seek (fd->f, position);
+}
+
+unsigned handle_tell (int fd_num){
+  struct file_descriptor *fd;
+
+  fd = get_opened_file(fd_num);
+
+  if (fd == NULL){
+    return 0;
+  }
+
+  return file_tell (fd->f);
+}
 
 void handle_close (int fd_num){
   struct list_elem *element;

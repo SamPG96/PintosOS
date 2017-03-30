@@ -9,6 +9,7 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "threads/malloc.h"
+#include "devices/input.h"
 
 typedef int pid_t;
 
@@ -37,9 +38,9 @@ bool handle_remove (const char *file_name);
 int handle_open (const char *file_name);
 int handle_filesize (int fd);
 int handle_read (int fd_num, void *buffer, unsigned size);
-int handle_write (int fd, const void *buffer, unsigned size);
-void handle_seek (int fd, unsigned position);
-unsigned handle_tell (int fd);
+int handle_write (int fd_num, const void *buffer, unsigned size);
+void handle_seek (int fd_num, unsigned position);
+unsigned handle_tell (int fd_num);
 void handle_close (int fd_num);
 
 struct file_descriptor * get_opened_file(int fd_num);
