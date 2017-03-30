@@ -1,6 +1,7 @@
 #include "userprog/syscall.h"
 
 void syscall_handler (struct intr_frame *f);
+int current_fd_num = 1;
 
 void
 syscall_init (void)
@@ -25,18 +26,17 @@ syscall_handler (struct intr_frame *f)
 
   switch(sys_call_code){
 
-    // case SYS_HALT: /* Halt the operating system. */
-
-    case SYS_EXIT: /* Terminate this process. */
-
-      handle_exit((int)load_stack(f, ARG_1));
-
+    case SYS_HALT: /* Halt the operating system. */
+      handle_halt();
       return;
 
-    // case SYS_EXEC: /* Start another process. */
-    //
-    //   handle_exec((char*)load_stack(f, ARG_1));
-    //   return;
+    case SYS_EXIT: /* Terminate this process. */
+      handle_exit((int)load_stack(f, ARG_1));
+      return;
+
+    case SYS_EXEC: /* Start another process. */
+       handle_exec((char*)load_stack(f, ARG_1));
+       return;
 
     // case SYS_WAIT: /* Wait for a child process to die. */
 
@@ -135,7 +135,9 @@ syscall_handler (struct intr_frame *f)
   thread_exit ();
 }
 
-// void handle_halt (void){}
+void handle_halt (void){
+  shutdown_power_off();
+}
 
 void handle_exit (int status){
   struct thread* cur;
@@ -145,20 +147,19 @@ void handle_exit (int status){
   element = cur->elem;
   list_remove(&element);
 
-  printf ("%s: exit(%i)\n", cur->name,status);
+  printf
+  ("%s: exit(%i)\n", cur->name,status);
   thread_exit();
 }
 
-// pid_t handle_exec (const char *cmd_line){
-//   struct list_elem* last_elem;
-//   struct list_elem* new_elem;
-//
-//   last_elem = list_end();
-//
-//   list_insert();
-// }
+pid_t handle_exec (const char *cmd_line){
+  printf("here");
+  return process_execute(cmd_line);
+}
 
-// int handle_wait (pid_t pid){}
+// int handle_wait (pid_t pid){
+//
+// }
 
 bool handle_create (const char *file_name, unsigned initial_size){
   return filesys_create(file_name, initial_size);

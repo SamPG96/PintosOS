@@ -9,6 +9,8 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "threads/malloc.h"
+#include "devices/shutdown.h"
+#include "process.h"
 
 typedef int pid_t;
 
@@ -24,8 +26,6 @@ struct file_descriptor{
 };
 
 struct list all_open_files;
-static int current_fd_num = 1;
-
 
 void syscall_init (void);
 void handle_halt (void);
