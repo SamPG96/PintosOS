@@ -38,7 +38,14 @@ syscall_handler (struct intr_frame *f)
        handle_exec((char*)load_stack(f, ARG_1));
        return;
 
-    // case SYS_WAIT: /* Wait for a child process to die. */
+    case SYS_WAIT: /* Wait for a child process to die. */
+	int ret;
+
+	curr= thread_current();
+	ret = handle_wait((pid_t)cuee->tid);
+
+	f->eax = ret;
+	return;
 
     // TODO: handle if already exists
     case SYS_CREATE: /* Create a file. */
@@ -157,9 +164,9 @@ pid_t handle_exec (const char *cmd_line){
   return process_execute(cmd_line);
 }
 
-// int handle_wait (pid_t pid){
-//
-// }
+int handle_wait (pid_t pid){
+  return process_wait((tid_t) ptd);
+}
 
 bool handle_create (const char *file_name, unsigned initial_size){
   return filesys_create(file_name, initial_size);
