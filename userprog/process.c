@@ -27,7 +27,7 @@ void retrieve_file_name(const char *file_name, char *program_name){
   int i = 0;
 
   for(; i < ((int)strlen(file_name)); i++){
-    // ensure program name isnt to long
+    // check program name is not too long
     if (i > MAX_ARG_SIZE - 2){
       break;
     }
@@ -257,6 +257,9 @@ process_exit (void)
       pagedir_activate (NULL);
       pagedir_destroy (pd);
     }
+
+    printf
+    ("%s: exit(%i)\n", cur->name,cur->status);
 }
 
 /* Sets up the CPU for running user code in the current
