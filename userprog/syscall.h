@@ -11,6 +11,7 @@
 #include "threads/malloc.h"
 #include "devices/shutdown.h"
 #include "process.h"
+#include "devices/input.h"
 
 typedef int pid_t;
 
@@ -19,28 +20,38 @@ typedef int pid_t;
 #define ARG_2 8
 #define ARG_3 12
 
+// stores the relevant attributes for an open file
 struct file_descriptor{
-  struct list_elem elem;
+  struct list_elem elem; // for use in a linked list
   int fd_num;
   struct file *f;
 };
 
+// stores all files that have been opened
 struct list all_open_files;
 
+// stores the last fd number allocated
+static int current_fd_num = 1;
+
+
+//TODO: complete me
 /*
   Function: syscall_init
   Description:
-  Params:none (void)
-  Returns:none (void)
+  Params:
+  Returns:
 */
 void syscall_init (void);
 
+//TODO: complete me
 /*
-  Function:handle_halt
+  Function: load_stack
   Description:
-  Params: none (void)
-  Returns:none (void)
+  Params:
+  Returns:
 */
+static uint32_t load_stack(struct intr_frame *f, int offset);
+
 void handle_halt (void);
 
 /*
@@ -68,82 +79,105 @@ pid_t handle_exec (const char *cmd_line);
 int handle_wait (pid_t pid);
 
 /*
-  Function:handle_create
-  Description:
+  Function: handle_create
+  Description: Creates a new file of a specified size in bytes.
   Params:
-  Returns:
+    file_name: The name of the file to create.
+    initial_size: The initial size of the new file.
+  Returns: True if the file was created successful, False otherwise.
 */
 bool handle_create (const char *file_name, unsigned initial_size);
 
 /*
-  Function:handle_remove
-  Description:
+  Function: handle_remove
+  Description: Delete a file from the filesystem. A file can be removed whether
+               or not the file is open.
   Params:
-  Returns:
+    file_name: The name of the file to remove.
+  Returns: True if removal was successful or False otherwise.
 */
 bool handle_remove (const char *file_name);
 
 /*
-  Function:handle_open
-  Description:
+  Function: handle_open
+  Description: Open specified file.
   Params:
-  Returns:
+    file_name: The name of the file to open.
+  Returns: File descriptor number or -1 if the file could not be opened.
 */
 int handle_open (const char *file_name);
 
 /*
-  Function:handle_filesize
-  Description:
+  Function: handle_filesize
+  Description: Determine the size of a file in bytes.
   Params:
-  Returns:
+    fd_num: The file descriptor number of the open file.
+  Returns: The size of the file in bytes.
 */
-int handle_filesize (int fd);
+int handle_filesize (int fd_num);
 
 /*
-  Function:handle_read
-  Description:
+  Function: handle_read
+  Description: Read 'size' amount of bytes from the open file and store it
+               inside the buffer. When fd_num is 0, the keyboard is read.
   Params:
-  Returns:
+    fd_num: The file descriptor number of the open file.
+    buffer: A pointer to where the read bytes should be stored to.
+    size: The amount of bytes to read.
+  Returns: The number of bytes actually read (0 at end of the file) or -1 if the
+           file cant be read (because of a condition other than end of file).
 */
 int handle_read (int fd_num, void *buffer, unsigned size);
 
 /*
-  Function:handle_write
-  Description:
+  Function: handle_write
+  Description: Write 'size' amount of bytes from the buffer to the open file.
+               When fd_num is 1, then the bytes are written to the console.
   Params:
-  Returns:
+    fd_num: The file descriptor number of the open file.
+    buffer: A pointer to where the bytes to be written are stored.
+    size: The amount of bytes to write.
+  Returns: The number of bytes actually written (0 if no bytes could be written).
 */
-int handle_write (int fd, const void *buffer, unsigned size);
+int handle_write (int fd_num, const void *buffer, unsigned size);
 
 /*
-  Function:handle_seek
-  Description:
+  Function: handle_seek
+  Description: Changes the next byte to be read or written in an open file.
   Params:
-  Returns:
+    fd_num: The file descriptor number of the open file.
+    position: The byte to move to (position 0 is the start of the file).
+  Returns: void
 */
-void handle_seek (int fd, unsigned position);
+void handle_seek (int fd_num, unsigned position);
 
 /*
-  Function:handle_tell
-  Description:
+  Function: handle_tell
+  Description: Determine the position of the next byte to be read or written
+               from the begining of an open file. Expressed in bytes.
   Params:
-  Returns:
+    fd_num: The file descriptor number of the open file.
+  Returns: The byte position.
 */
-unsigned handle_tell (int fd);
+unsigned handle_tell (int fd_num);
 
 /*
-  Function:handle_close
-  Description:
+  Function: handle_close
+  Description: Closes a open file
   Params:
-  Returns:none (void)
+    fd_num: The file descriptor number of the open file.
+  Returns: void
 */
 void handle_close (int fd_num);
 
 /*
-  Function:get_opened_file
-  Description:
+  Function: get_opened_file
+  Description: Retrieves the file_descriptor struct for an open file by using a
+               file descriptor number. This struct can be used to access the
+               data inside a open file.
   Params:
-  Returns:
+    fd_num: The file descriptor number of the open file.
+  Returns: The file_descriptor struct of the open file.
 */
 struct file_descriptor * get_opened_file(int fd_num);
 

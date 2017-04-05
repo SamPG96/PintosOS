@@ -8,4 +8,6 @@ pintos -p ../../examples/rm -a rm -- -q
 pintos -p ../../examples/ls -a ls -- -q
 pintos -p ../../examples/cp -a cp -- -q
 pintos -p ../../examples/recursor -a recursor -- -q
+pintos -p ../../examples/shell -a shell -- -q
+pintos -p ../../examples/seektelltest -a seektelltest -- -q
 pintos -p ../../CNOS_dev/simple.txt -a simple.txt -- -q
