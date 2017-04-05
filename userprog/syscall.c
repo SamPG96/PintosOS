@@ -1,7 +1,6 @@
 #include "userprog/syscall.h"
 
 void syscall_handler (struct intr_frame *f);
-int current_fd_num = 1;
 
 void
 syscall_init (void)
@@ -13,8 +12,6 @@ syscall_init (void)
 /* Gets the required argument for a process from the stack*/
 static uint32_t load_stack(struct intr_frame *f, int offset)
 {
-  //TODO: check for valid address
-
   return *((uint32_t*)(f->esp + offset));
 }
 
@@ -181,8 +178,7 @@ void handle_exit (int status){
   list_remove(&element);
   cur->status = status;
 
-  printf
-  ("%s: exit(%i)\n", cur->name,cur->status);
+  process_exit();
   thread_exit();
 }
 
@@ -193,7 +189,6 @@ pid_t handle_exec (const char *cmd_line){
 // int handle_wait (pid_t pid){
 //   return process_wait((tid_t) pid);
 // }
-
 
 bool handle_create (const char *file_name, unsigned initial_size){
   return filesys_create(file_name, initial_size);
@@ -311,9 +306,8 @@ unsigned handle_tell (int fd_num){
 
   fd = get_opened_file(fd_num);
 
-  //TODO: check return code here
   if (fd == NULL){
-    return NULL;
+    return 0;
   }
 
   return file_tell (fd->f);

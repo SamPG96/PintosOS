@@ -33,48 +33,56 @@ struct list all_open_files;
 // stores the last fd number allocated
 static int current_fd_num = 1;
 
-
-//TODO: complete me
 /*
   Function: syscall_init
-  Description:
-  Params:
-  Returns:
+  Description: Sets interrupt register on.
+  Params: none (void)
+  Returns: none (void)
 */
 void syscall_init (void);
 
-//TODO: complete me
 /*
   Function: load_stack
-  Description:
+  Description: Gets the required argument for a process from the stack.
   Params:
-  Returns:
+    f: The frame to which we can read the stack.
+    offset: The point of the stack we want to read.
+  Returns: The argument required from the stack
 */
 static uint32_t load_stack(struct intr_frame *f, int offset);
 
+/*
+  Function:handle_halt
+  Description: Shuts down Pintos.
+  Params:none (void)
+  Returns:none (void)
+*/
 void handle_halt (void);
 
 /*
   Function:handle_exit
-  Description:
-  Params:none (void)
+  Description: Exits current thread and pinds it's status.
+  Params:
+    status: Used to set current threads status.
   Returns:none (void)
 */
 void handle_exit (int status);
 
 /*
   Function:handle_exec
-  Description:
+  Description: Runs the executable given in the comand line
   Params:
-  Returns:
+    cmd_line: The string of chars from the comand line
+  Returns: process id of executing thread.
 */
 pid_t handle_exec (const char *cmd_line);
 
 /*
   Function:handle_wait
-  Description:
+  Description: Waits for a child and retrieves the child's exit status. 
   Params:
-  Returns:
+    pid: Process id of child to be waited on
+  Returns: Childs exit status
 */
 int handle_wait (pid_t pid);
 
