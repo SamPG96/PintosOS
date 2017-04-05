@@ -29,7 +29,7 @@ struct list all_open_files;
 
 /*
   Function: syscall_init
-  Description;
+  Description:
   Params:none (void)
   Returns:none (void)
 */
@@ -37,7 +37,7 @@ void syscall_init (void);
 
 /*
   Function:handle_halt
-  Description;
+  Description:
   Params: none (void)
   Returns:none (void)
 */
@@ -45,7 +45,7 @@ void handle_halt (void);
 
 /*
   Function:handle_exit
-  Description;
+  Description:
   Params:none (void)
   Returns:none (void)
 */
@@ -53,7 +53,7 @@ void handle_exit (int status);
 
 /*
   Function:handle_exec
-  Description;
+  Description:
   Params:
   Returns:
 */
@@ -61,7 +61,7 @@ pid_t handle_exec (const char *cmd_line);
 
 /*
   Function:handle_wait
-  Description;
+  Description:
   Params:
   Returns:
 */
@@ -69,7 +69,7 @@ int handle_wait (pid_t pid);
 
 /*
   Function:handle_create
-  Description;
+  Description:
   Params:
   Returns:
 */
@@ -77,7 +77,7 @@ bool handle_create (const char *file_name, unsigned initial_size);
 
 /*
   Function:handle_remove
-  Description;
+  Description:
   Params:
   Returns:
 */
@@ -85,7 +85,7 @@ bool handle_remove (const char *file_name);
 
 /*
   Function:handle_open
-  Description;
+  Description:
   Params:
   Returns:
 */
@@ -93,7 +93,7 @@ int handle_open (const char *file_name);
 
 /*
   Function:handle_filesize
-  Description;
+  Description:
   Params:
   Returns:
 */
@@ -101,7 +101,7 @@ int handle_filesize (int fd);
 
 /*
   Function:handle_read
-  Description;
+  Description:
   Params:
   Returns:
 */
@@ -109,7 +109,7 @@ int handle_read (int fd_num, void *buffer, unsigned size);
 
 /*
   Function:handle_write
-  Description;
+  Description:
   Params:
   Returns:
 */
@@ -117,7 +117,7 @@ int handle_write (int fd, const void *buffer, unsigned size);
 
 /*
   Function:handle_seek
-  Description;
+  Description:
   Params:
   Returns:
 */
@@ -125,7 +125,7 @@ void handle_seek (int fd, unsigned position);
 
 /*
   Function:handle_tell
-  Description;
+  Description:
   Params:
   Returns:
 */
@@ -133,7 +133,7 @@ unsigned handle_tell (int fd);
 
 /*
   Function:handle_close
-  Description;
+  Description:
   Params:
   Returns:none (void)
 */
@@ -141,7 +141,7 @@ void handle_close (int fd_num);
 
 /*
   Function:get_opened_file
-  Description;
+  Description:
   Params:
   Returns:
 */

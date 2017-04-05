@@ -211,8 +211,25 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED)
 {
-    // FIXME: @bgaster --- quick hack to make sure processes execute!
-  for(;;) ;
+  // struct semaphore* c_alive;
+  // struct thread* parent;
+  // struct thread* child;
+  // struct list_elem* elem;
+  //
+  // parent = thread_current();
+  //
+  // //Find child process
+  // for(elem = list_begin(&all_list);elem == list_end(&all_list);
+  //       elem = list_next(&elem)){
+  //   child = list_entry(elem, struct thread, child);
+  //
+  //   //Child found
+  //   if(child_tid == child->tid){
+  //     break;
+  //   }
+  // }
+
+  for(;;);
 
   return -1;
 }

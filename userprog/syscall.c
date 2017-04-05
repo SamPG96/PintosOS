@@ -27,25 +27,32 @@ syscall_handler (struct intr_frame *f)
   switch(sys_call_code){
 
     case SYS_HALT: /* Halt the operating system. */
+    {
       handle_halt();
       return;
+    }
 
     case SYS_EXIT: /* Terminate this process. */
+    {
       handle_exit((int)load_stack(f, ARG_1));
       return;
+    }
 
     case SYS_EXEC: /* Start another process. */
+    {
        handle_exec((char*)load_stack(f, ARG_1));
        return;
+     }
 
-    case SYS_WAIT: /* Wait for a child process to die. */
-	int ret;
-
-	curr= thread_current();
-	ret = handle_wait((pid_t)cuee->tid);
-
-	f->eax = ret;
-	return;
+    // case SYS_WAIT: /* Wait for a child process to die. */
+    // {
+    //   int ret;
+    //
+    // 	ret = handle_wait((pid_t)load_stack(f, ARG_1));
+    //
+    // 	f->eax = ret;
+    // 	return;
+    // }
 
     // TODO: handle if already exists
     case SYS_CREATE: /* Create a file. */
@@ -153,20 +160,20 @@ void handle_exit (int status){
   struct list_elem element;
   element = cur->elem;
   list_remove(&element);
+  cur->status = status;
 
   printf
-  ("%s: exit(%i)\n", cur->name,status);
+  ("%s: exit(%i)\n", cur->name,cur->status);
   thread_exit();
 }
 
 pid_t handle_exec (const char *cmd_line){
-  printf("here");
   return process_execute(cmd_line);
 }
 
-int handle_wait (pid_t pid){
-  return process_wait((tid_t) ptd);
-}
+// int handle_wait (pid_t pid){
+//   return process_wait((tid_t) pid);
+// }
 
 bool handle_create (const char *file_name, unsigned initial_size){
   return filesys_create(file_name, initial_size);
