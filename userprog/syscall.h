@@ -9,6 +9,8 @@
 #include "threads/interrupt.h"
 #include "threads/thread.h"
 #include "threads/malloc.h"
+#include "devices/shutdown.h"
+#include "process.h"
 #include "devices/input.h"
 
 typedef int pid_t;
@@ -27,6 +29,7 @@ struct file_descriptor{
 
 // stores all files that have been opened
 struct list all_open_files;
+
 // stores the last fd number allocated
 static int current_fd_num = 1;
 
@@ -49,10 +52,30 @@ void syscall_init (void);
 */
 static uint32_t load_stack(struct intr_frame *f, int offset);
 
-
 void handle_halt (void);
+
+/*
+  Function:handle_exit
+  Description:
+  Params:none (void)
+  Returns:none (void)
+*/
 void handle_exit (int status);
+
+/*
+  Function:handle_exec
+  Description:
+  Params:
+  Returns:
+*/
 pid_t handle_exec (const char *cmd_line);
+
+/*
+  Function:handle_wait
+  Description:
+  Params:
+  Returns:
+*/
 int handle_wait (pid_t pid);
 
 /*
