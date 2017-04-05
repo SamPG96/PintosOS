@@ -2,6 +2,9 @@
 
 void syscall_handler (struct intr_frame *f);
 
+// stores the last fd number allocated
+static int current_fd_num = 1;
+
 void
 syscall_init (void)
 {
@@ -10,7 +13,8 @@ syscall_init (void)
 }
 
 /* Gets the required argument for a process from the stack*/
-static uint32_t load_stack(struct intr_frame *f, int offset)
+uint32_t
+load_stack(struct intr_frame *f, int offset)
 {
   return *((uint32_t*)(f->esp + offset));
 }
@@ -40,7 +44,12 @@ syscall_handler (struct intr_frame *f)
 
     case SYS_EXEC: /* Start another process. */
     {
-       handle_exec((char*)load_stack(f, ARG_1));
+      pid_t pid;
+
+      pid = handle_exec((char*)load_stack(f, ARG_1));
+
+      // set return value
+      f->eax = pid;
        return;
      }
 
@@ -173,12 +182,12 @@ void handle_exit (int status){
   struct thread* cur;
   cur = thread_current();
 
+  // remove thread from list
   struct list_elem element;
   element = cur->elem;
   list_remove(&element);
   cur->status = status;
 
-  process_exit();
   thread_exit();
 }
 
@@ -345,7 +354,7 @@ struct file_descriptor * get_opened_file(int fd_num){
   struct file_descriptor *fd;
 
   fd = calloc(1, sizeof *fd);
-  
+
   // locate file in the list and return its file_descriptor struct
   for (element = list_begin(&all_open_files);
        element != list_end(&all_open_files);

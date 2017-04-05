@@ -30,9 +30,6 @@ struct file_descriptor{
 // stores all files that have been opened
 struct list all_open_files;
 
-// stores the last fd number allocated
-static int current_fd_num = 1;
-
 /*
   Function: syscall_init
   Description: Sets interrupt register on.
@@ -49,7 +46,7 @@ void syscall_init (void);
     offset: The point of the stack we want to read.
   Returns: The argument required from the stack
 */
-static uint32_t load_stack(struct intr_frame *f, int offset);
+uint32_t load_stack(struct intr_frame *f, int offset);
 
 /*
   Function:handle_halt
@@ -79,7 +76,7 @@ pid_t handle_exec (const char *cmd_line);
 
 /*
   Function:handle_wait
-  Description: Waits for a child and retrieves the child's exit status. 
+  Description: Waits for a child and retrieves the child's exit status.
   Params:
     pid: Process id of child to be waited on
   Returns: Childs exit status
