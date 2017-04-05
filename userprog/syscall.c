@@ -201,7 +201,6 @@ bool handle_remove (const char *file_name){
 int handle_open(const char *file_name){
   struct file_descriptor *fd;
 
-  // TODO: add in all places?
   fd = calloc(1, sizeof *fd);
   fd->f = filesys_open(file_name);
 
@@ -222,6 +221,7 @@ int handle_open(const char *file_name){
 int handle_filesize (int fd_num){
   struct file_descriptor *fd;
 
+  fd = calloc(1, sizeof *fd);
   fd = get_opened_file(fd_num);
 
   // return error code if there was a problem opening the file
@@ -237,6 +237,8 @@ int handle_read (int fd_num, void *buffer, unsigned size){
   uint8_t key_input;
   unsigned byte_pos;
   uint8_t* b = (uint8_t*)buffer;
+
+  fd = calloc(1, sizeof *fd);
 
   if (fd_num == STDOUT_FILENO){
     return -1;
@@ -266,6 +268,8 @@ int handle_write (int fd_num, const void *buffer, unsigned int length){
   struct file_descriptor *fd;
   int bw; // bytes written
 
+  fd = calloc(1, sizeof *fd);
+
   if (fd_num == STDOUT_FILENO) {
     // write to console
     putbuf((const char *)buffer, (size_t)length);
@@ -291,6 +295,7 @@ int handle_write (int fd_num, const void *buffer, unsigned int length){
 void handle_seek (int fd_num, unsigned position){
   struct file_descriptor *fd;
 
+  fd = calloc(1, sizeof *fd);
   fd = get_opened_file(fd_num);
 
   // return if there was a problem opening the file
@@ -304,6 +309,7 @@ void handle_seek (int fd_num, unsigned position){
 unsigned handle_tell (int fd_num){
   struct file_descriptor *fd;
 
+  fd = calloc(1, sizeof *fd);
   fd = get_opened_file(fd_num);
 
   if (fd == NULL){
@@ -316,6 +322,8 @@ unsigned handle_tell (int fd_num){
 void handle_close (int fd_num){
   struct list_elem *element;
   struct file_descriptor *fd;
+
+  fd = calloc(1, sizeof *fd);
 
   // find the open file in the list to remove and close it
   for (element = list_begin(&all_open_files);
@@ -336,6 +344,8 @@ struct file_descriptor * get_opened_file(int fd_num){
   struct list_elem *element;
   struct file_descriptor *fd;
 
+  fd = calloc(1, sizeof *fd);
+  
   // locate file in the list and return its file_descriptor struct
   for (element = list_begin(&all_open_files);
        element != list_end(&all_open_files);
