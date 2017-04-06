@@ -92,10 +92,15 @@ struct thread
 
     /* Shared between thread.c and synch.c. */
     struct list_elem elem;              /* List element. */
-      
+
 #ifdef USERPROG
     /* Owned by userprog/process.c. */
     uint32_t *pagedir;                  /* Page directory. */
+    // FIXME: for wait syscall
+    // struct thread * parent; /* parent of the thread */
+    // struct semaphore *alive; /* To check if thread is alive */
+    // struct list_elem child; /* element of parent's list of children*/
+    // struct list children; /* child processes */
 #endif
 
     /* Owned by thread.c. */

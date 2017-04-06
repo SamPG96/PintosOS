@@ -53,15 +53,16 @@ syscall_handler (struct intr_frame *f)
        return;
      }
 
-    // case SYS_WAIT: /* Wait for a child process to die. */
-    // {
-    //   int ret;
-    //
-    // 	ret = handle_wait((pid_t)load_stack(f, ARG_1));
-    //
-    // 	f->eax = ret;
-    // 	return;
-    // }
+     // FIXME: for wait syscall
+     // case SYS_WAIT: /* Wait for a child process to die. */
+     // {
+     //   int ret;
+     //
+     // 	ret = handle_wait((pid_t)load_stack(f, ARG_1));
+     //
+     // 	f->eax = ret;
+     // 	return;
+     // }
 
     case SYS_CREATE: /* Create a file. */
     {
@@ -195,6 +196,7 @@ pid_t handle_exec (const char *cmd_line){
   return process_execute(cmd_line);
 }
 
+// FIXME: for wait syscall
 // int handle_wait (pid_t pid){
 //   return process_wait((tid_t) pid);
 // }

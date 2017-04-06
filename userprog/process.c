@@ -211,16 +211,19 @@ start_process (void *file_name_)
 int
 process_wait (tid_t child_tid UNUSED)
 {
-  // struct semaphore* c_alive;
+  // FIXME: for wait syscall
+  // struct semaphore* alive;
   // struct thread* parent;
-  // struct thread* child;
+  // struct thread* child = NULL;
   // struct list_elem* elem;
+  // int ret;
   //
+  // ret = -1;
   // parent = thread_current();
   //
   // //Find child process
-  // for(elem = list_begin(&all_list);elem == list_end(&all_list);
-  //       elem = list_next(&elem)){
+  // for(elem = list_begin(&parent->children);elem == list_end(&parent->children);
+  //       elem = list_next(elem)){
   //   child = list_entry(elem, struct thread, child);
   //
   //   //Child found
@@ -228,6 +231,26 @@ process_wait (tid_t child_tid UNUSED)
   //     break;
   //   }
   // }
+  //
+  // if (child == NULL){
+  //   return -1;
+  // }
+  //
+  // if(child != NULL && child_tid != child->tid){
+  //   return ret; // Could not find child in current thread
+  // }
+  //
+  // if(child != NULL && child->alive != NULL) {
+  //    return ret; // Already waiting
+  // }
+  //
+  // // Set child alive semaphore
+  // alive = (struct semaphore *) calloc (1,sizeof (struct semaphore));
+  // sema_init (alive, 0);
+  // child->alive = alive;
+  //
+  // free(alive);
+  // return child->status;
 
   for(;;);
 
