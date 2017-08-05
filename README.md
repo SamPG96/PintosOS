@@ -27,6 +27,8 @@ These are the systems call that have been successfully implemnted:
  We where already given a big chunk of the OS by our lecturer so that we could implement argument
  passing and system calls.
  
- The commit history will show the changes that our group has made to the OS.
+ The commit history will show the changes that our group has made to the pre-developed OS.
  
- NOTE: This assaigment was completed as a group, so there was collaboration on a number of commits.
+ NOTE: This assignment was completed as a group, so there was collaboration on a number of commits.
+ 
+ Our group was graded a 2:1 on this assignment.
