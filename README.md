@@ -1,4 +1,4 @@
-Pinto OS was developed at Stanford University to enable students to experience many of the
+Pintos OS was developed at Stanford University to enable students to experience many of the
 features of a real OS, without some of the complexities of an operating system such as Linux
 or MS Windows.
 
